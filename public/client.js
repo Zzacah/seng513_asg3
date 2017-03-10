@@ -10,7 +10,8 @@ $(function() {
     });
 
     socket.on('chat', function(msg){
-		$('#messages').append($('<li>').text(person.nickname + ": " + msg));
+		$('#messages').append($('<li>').html('<span style="color: '+ person.color + '">' 
+			+ person.nickname + ': </span> ' + msg));
     });
 
     socket.on('who', function(msg){
