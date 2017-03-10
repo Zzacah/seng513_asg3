@@ -24,10 +24,19 @@ io.on('connection', function(socket){
 
 	console.log(JSON.stringify(users, null, 2));
 
-    socket.on('chat', function(msg){
+  socket.on('chat', function(msg){
 		io.emit('who', JSON.stringify(currentUser, null, 2));
 		io.emit('chat', msg);
-    });
+  });
+
+  socket.on('disconnect', function() {
+    var whoLeftName = person.nickname;
+
+    var indexOfDisconnected = users.indexOf(person.nickname);
+    users.splice(indexOfDisconnected, 1);
+
+    io.emit('disconnected', whoLeftName + " disconnected.");
+  });
 });
 
 function person(name, color) {
