@@ -26,7 +26,8 @@ io.on('connection', function(socket){
 
   socket.on('chat', function(msg){
 		io.emit('who', JSON.stringify(currentUser, null, 2));
-		io.emit('chat', msg);
+		socket.broadcast.emit('chat', msg);
+		socket.emit('boldedchat', msg);
   });
 
   socket.on('disconnect', function() {

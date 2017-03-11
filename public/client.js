@@ -17,4 +17,9 @@ $(function() {
     socket.on('who', function(msg){
     	person = JSON.parse(msg);
     });
+
+    socket.on('boldedchat', function(msg) {
+        $('#messages').append($('<li>').html('<b><span style="color: '+ person.color + '">' 
+            + person.nickname + ': </span> ' + msg + '</b>'));
+    });
 });
