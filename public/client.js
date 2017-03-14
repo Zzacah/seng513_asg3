@@ -22,4 +22,12 @@ $(function() {
         $('#messages').append($('<li>').html('<b><span style="color: '+ person.color + '">' 
             + person.nickname + ': </span> ' + msg + '</b>'));
     });
+
+    socket.on('newNameError', function(msg) {
+        $('#messages').append($('<li>').text(msg));
+    });
+
+    socket.on('nickchange', function(msg) {
+        $('#messages').append($('<li>').text(msg));
+    });
 });
