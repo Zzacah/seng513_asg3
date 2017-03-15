@@ -1,12 +1,25 @@
 <!doctype html>
 <html>
   <head>
-    <title>Socket.IO chat</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>zachat</title>
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
     <!-- ACTUAL HTML -->
-    <ul id="messages"></ul>
+    <div class="container">
+      <div class="chat-div">
+        <h1 id="chat-user-lbl"></h1>
+        <ul id="messages"></ul>
+      </div>
+
+      <div class="users-div">
+        <h1> Online Users: </h1>
+        <ul id="userlist"></ul>
+      </div>
+    </div>
+
     <form action="">
       <input id="m" autocomplete="off" /><button>Send</button>
     </form>

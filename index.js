@@ -16,53 +16,74 @@ app.use(express.static(__dirname + '/public'));
 
 // listen to 'chat' messages
 io.on('connection', function(socket){
-	var nickname = "User " + userCounter;
-	var color = '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
-	var currentUser = new person(nickname, color);
-	userCounter++;
 
-	users.push(currentUser);
+	socket.on('newuser', function() {
+		var nickname = "User " + userCounter;
+		var color = '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6);
+		userCounter++;
+		socket.nick = nickname;
+		socket.color = color;
+		users.push({nickname: nickname, color: color});
+		socket.emit('newuser', nickname);
+		socket.broadcast.emit('someoneconnected', nickname);
+		socket.emit('fetchconversation', messages);
+		console.log(users);
+		io.emit('updateusers', users);
+	});
 
-  socket.on('chat', function(msg){
+	socket.on('chat', function(msg){
 
-  	var msgLength = msg.length;
+		timestamp = new Date();
+		time = timestamp.getHours() + ":" + timestamp.getMinutes();
 
-  	if (msg.substring(0,6) == "/nick ") {
-  		// change nickname, don't send a message
-  		var newName = msg.substring(6,msgLength);
+		if(msg.startsWith("/nick ")) {
+			let oldName = socket.nick;
+			socket.nick = msg.slice(6);
+			changeName(oldName, socket.nick);
+			io.emit('updateusers', users);
+			socket.broadcast.emit('someonerenamed', oldName, socket.nick, socket.color);
+			socket.emit('namechange', socket.nick, socket.color);
+		} else if (msg.startsWith("/nickcolor ")) {
+			socket.color = msg.slice(11);
+			changeColor(socket.nick, socket.color);
+			io.emit('updateusers', users);
+		} else {
+			//don't change anything and just send a normal message
+			socket.broadcast.emit('chat', time, msg, socket.nick, socket.color);
+			socket.emit('boldedchat', time, msg, socket.nick, socket.color);
+			if(messages.length >= 200) {
+				messages.shift();
+			} 
+			messages.push({who: socket.nick, color: socket.color, msg: msg});
+		}
+	});
 
-  		if(users.indexOf(newName) >= 0) {
-  			socket.emit('newNameError', newName + " is already taken.");
-  		} else {
-  			io.emit('nickchange', nickname + " has changed their name to " + newName);
-  			person.nickname = newName;
-  			users[users.indexOf(nickname)] = newName;
-  			console.log(users[users.indexOf(nickname)]);
-  		}
-
-  	} else if (msg.substring(0,13) == "/nickcolor ") {
-  		// change nickname color, don't send a message
-
-  	} else {
-  		//don't change anything and just send a normal message
-		messages.push({who: person.nickname, color: person.color, text: msg});
-		io.emit('who', JSON.stringify(users[users.indexOf(nickname)], null, 2));
-		socket.broadcast.emit('chat', msg);
-		socket.emit('boldedchat', msg);
-	}
-  });
-
-  socket.on('disconnect', function() {
-    var whoLeftName = person.nickname;
-
-    var indexOfDisconnected = users.indexOf(person.nickname);
-    users.splice(indexOfDisconnected, 1);
-
-    io.emit('disconnected', whoLeftName + " disconnected.");
-  });
+	socket.on('disconnect', function() {
+		findIndex(socket.nick);
+		io.emit('updateusers', users);
+	});
 });
 
-function person(name, color) {
-	this.nickname = name;
-	this.color = color;
+function changeName(name, newName) {
+	for(let i in users) {
+		if (users[i].nickname === name) {
+			users[i].nickname = newName;
+		}
+	}
+}
+
+function changeColor(name, color) {
+	for(let i in users) {
+		if (users[i].nickname === name) {
+			users[i].color = color;
+		}
+	}
+}
+
+function findIndex(name) {
+	for(let i in users) {
+		if (users[i].nickname === name) {
+			users.splice(i, 1);
+		}
+	}
 }
