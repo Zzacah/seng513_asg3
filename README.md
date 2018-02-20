@@ -1,3 +1,6 @@
+This project hosted on http://floating-river-47749.herokuapp.com
+
+
 # chat-example
 
 This is the source code for a very simple chat example used for 
